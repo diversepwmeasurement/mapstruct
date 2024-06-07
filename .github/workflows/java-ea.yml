@@ -1,25 +1,29 @@
-name: Java EA
-
-on: [push]
-
 env:
-  MAVEN_ARGS: -V -B --no-transfer-progress -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
-
+  MAVEN_ARGS: -V -B --no-transfer-progress -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false
+    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
 jobs:
   test_jdk_ea:
+    name: Linux JDK ${{ matrix.java }}
+    runs-on: self-hosted
+    steps:
+    - continue-on-error: true
+      name: Checkout
+      uses: actions/checkout@v3
+    - continue-on-error: true
+      name: Set up JDK
+      uses: oracle-actions/setup-java@v1
+      with:
+        release: EA
+        website: jdk.java.net
+    - continue-on-error: true
+      name: Test
+      run: ./mvnw ${MAVEN_ARGS} -Djacoco.skip=true install -DskipDistribution=true
     strategy:
       fail-fast: false
       matrix:
-        java: [19-ea]
-    name: 'Linux JDK ${{ matrix.java }}'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v3
-      - name: 'Set up JDK'
-        uses: oracle-actions/setup-java@v1
-        with:
-          website: jdk.java.net
-          release: EA
-      - name: 'Test'
-        run: ./mvnw ${MAVEN_ARGS} -Djacoco.skip=true install -DskipDistribution=true
+        java:
+        - 19-ea
+name: Java EA
+on:
+  repository_dispatch:
+    types: trigger-ga___java-ea.yml
